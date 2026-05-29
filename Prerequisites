@@ -1,0 +1,14 @@
+Make sure the following are installed on your system before proceeding:
+
+Requirement                     Version
+-------------------------------------------------
+Ubuntu                          22.04 LTS
+ROS2                            HUmbill Hawkbill
+Python                          3.10+
+Rviz2                           Comes with ROS2 Humble
+Numpy                           Comes with Python
+-------------------------------------------------
+
+To verify ROS 2 is installed, type this command in the terminal:
+source /opt/ros/humble/setup.bash
+ros2 --version
