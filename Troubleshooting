@@ -1,0 +1,10 @@
+if RViz2 shows nothing / grey screen:
+
+Make sure Terminal 1 (publisher node) is running first before opening RViz2
+Check Fixed Frame is set to map
+
+If we encounter an error saying ros2 command not found, type the following command in the terminal:
+source /opt/ros/humble/setup.bash
+
+In case we observe warning about byte values in PointCloud2:
+This is a harmless ROS 2 Humble internal warning and does not affect the simulation
