@@ -1,0 +1,146 @@
+Follow these steps exactly in order and all commands are executed in the terminal:
+
+Open a terminal (Ctrl + Alt + T) and run copy paste each command as shown in the order:
+
+Step 1 — Create the workspace:
+mkdir -p ~/pothole_ws/src && cd ~/pothole_ws/src
+
+Step 2 — Create the ROS 2 package:
+ros2 pkg create --build-type ament_python pothole_sim --dependencies rclpy sensor_msgs std_msgs visualization_msgs
+
+Step 3 — Create the publisher node:
+cat > ~/pothole_ws/src/pothole_sim/pothole_sim/pothole_publisher.py << 'PYEOF'
+import rclpy
+from rclpy.node import Node
+from sensor_msgs.msg import PointCloud2, PointField
+from visualization_msgs.msg import Marker, MarkerArray
+from std_msgs.msg import Header
+import numpy as np
+
+class PotholePublisher(Node):
+    def __init__(self):
+        super().__init__('pothole_publisher')
+        self.cloud_pub = self.create_publisher(PointCloud2, '/lidar/points', 10)
+        self.marker_pub = self.create_publisher(MarkerArray, '/pothole_labels', 10)
+        self.timer = self.create_timer(0.1, self.publish_all)
+        self.potholes = [
+            (0.5,  4.0, 0.6, 0.12),
+            (-1.2, 8.5, 0.5, 0.09),
+            (1.8, 13.0, 0.7, 0.15),
+            (-0.3, 17.0, 0.4, 0.08),
+        ]
+        self.get_logger().info('Pothole simulator started!')
+
+    def publish_all(self):
+        points = self.generate_road_with_potholes()
+        self.cloud_pub.publish(self.build_pointcloud2(points))
+        self.marker_pub.publish(self.build_markers())
+
+    def generate_road_with_potholes(self):
+        x_vals = np.arange(-5.0, 5.0, 0.05)
+        y_vals = np.arange(0.0, 20.0, 0.05)
+        xx, yy = np.meshgrid(x_vals, y_vals)
+        zz = np.zeros_like(xx)
+        for (cx, cy, r, depth) in self.potholes:
+            dist = np.sqrt((xx - cx)**2 + (yy - cy)**2)
+            mask = dist < r
+            zz[mask] += -depth * (1.0 - (dist[mask] / r))
+        zz += np.random.normal(0, 0.002, zz.shape)
+        x_flat = xx.flatten().astype(np.float32)
+        y_flat = yy.flatten().astype(np.float32)
+        z_flat = zz.flatten().astype(np.float32)
+        intensity = (z_flat - z_flat.min()) / (z_flat.max() - z_flat.min() + 1e-6)
+        return np.column_stack([x_flat, y_flat, z_flat, (intensity * 255).astype(np.float32)])
+
+    def build_pointcloud2(self, points):
+        header = Header()
+        header.stamp = self.get_clock().now().to_msg()
+        header.frame_id = 'map'
+        fields = [
+            PointField(name='x', offset=0,  datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4,  datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8,  datatype=PointField.FLOAT32, count=1),
+            PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1),
+        ]
+        msg = PointCloud2()
+        msg.header = header
+        msg.height = 1
+        msg.width = len(points)
+        msg.fields = fields
+        msg.is_bigendian = False
+        msg.point_step = 16
+        msg.row_step = 16 * len(points)
+        msg.data = bytearray(points.astype(np.float32).tobytes())
+        msg.is_dense = True
+        return msg
+
+    def build_markers(self):
+        marker_array = MarkerArray()
+        now = self.get_clock().now().to_msg()
+        for i, (cx, cy, r, depth) in enumerate(self.potholes):
+            depth_val = depth * 100
+            dia_val = r * 2.0 * 100
+            label = f'P{i+1} | Depth:{depth_val:.0f}mm | Dia:{dia_val:.0f}mm'
+            m = Marker()
+            m.header.frame_id = 'map'
+            m.header.stamp = now
+            m.ns = 'pothole_labels'
+            m.id = i
+            m.type = Marker.TEXT_VIEW_FACING
+            m.action = Marker.ADD
+            m.pose.position.x = cx
+            m.pose.position.y = cy
+            m.pose.position.z = 0.35
+            m.pose.orientation.w = 1.0
+            m.scale.z = 0.18
+            m.color.r = 1.0
+            m.color.g = 1.0
+            m.color.b = 0.2
+            m.color.a = 1.0
+            m.text = label
+            marker_array.markers.append(m)
+        return marker_array
+
+def main(args=None):
+    rclpy.init(args=args)
+    rclpy.spin(PotholePublisher())
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+PYEOF
+
+Step 4 — Write the setup.py:
+cat > ~/pothole_ws/src/pothole_sim/setup.py << 'EOF'
+from setuptools import setup
+package_name = 'pothole_sim'
+setup(
+    name=package_name,
+    version='0.0.1',
+    packages=[package_name],
+    data_files=[
+        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+    ],
+    install_requires=['setuptools'],
+    zip_safe=True,
+    maintainer='user',
+    maintainer_email='user@example.com',
+    description='Fake LiDAR pothole simulation',
+    license='MIT',
+    entry_points={
+        'console_scripts': [
+            'pothole_publisher = pothole_sim.pothole_publisher:main',
+        ],
+    },
+)
+EOF
+
+Step 5 — Build the package:
+cd ~/pothole_ws
+colcon build --packages-select pothole_sim
+source install/setup.bash
+
+We should see :
+Finished <<pothole_sim>> [X.XXs]
+Summary: 1 package finished
