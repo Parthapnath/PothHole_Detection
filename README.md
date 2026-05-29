@@ -1,2 +1,2 @@
-# PothHole_Detection
-This repository contains information about the algorithm to simulate the potholes using rviz2 and ros2(Humble)
+🛣️ Pothole Detection Simulation using ROS 2 & RViz2
+A fake LiDAR-based 3D pothole detection simulation built with ROS 2 Humble and visualized in RViz2. This project simulates a road surface with realistic pothole depressions and overlays each pothole with a floating label showing its depth and diameter in real time.
