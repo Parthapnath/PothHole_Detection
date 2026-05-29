@@ -1,0 +1,8 @@
+Component                                                    Description
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+PointCloud2 topic /lidar/points                              Publishes the 3D road surface with pothole depressions at 10 Hz
+MarkerArray topic /pothole_labels                            Publishes floating yellow text labels above each pothole
+Gaussian noise                                               Small random noise added to Z values to simulate real LiDAR imperfection
+Bowl shape                                                   Each pothole uses a cosine-like bowl formula for a smooth depression
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
