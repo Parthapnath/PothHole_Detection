@@ -1,0 +1,35 @@
+Every time we want to run the simulation, open two terminals and run one command in each.
+
+Terminal 1 — Start the publisher node:
+ros2 run pothole_sim pothole_publisher
+
+We should see:
+[INFO] Pothole LiDAR simulator started! — it will keep printing nothing and running. That is correct.
+
+NOTE: Keep this terminal open and running.
+
+Terminal 2 — Launch RViz2
+source /opt/ros/humble/setup.bash
+rviz2
+
+🎛️ Configuring RViz2
+After RViz2 opens, do the following inside the GUI:
+
+What to do                             Where/What to set
+-----------------------------------------------------------------------------------------------
+Set Fixed Frame                        Top-left panel → Fixed Frame → type map → Enter
+Add PointCloud2                        Click Add → By topic → /lidar/points → PointCloud2 → OK
+Set Color Transformer                  Under PointCloud2 → Color Transformer → Intensity
+Set Color Map                          Under PointCloud2 → Color Map → Turbo
+Set Style                              Under PointCloud2 → Style → Flat Squares
+Set Size                               Under PointCloud2 → Size (m) → 0.04
+Add MarkerArray                        Click Add → By topic → /pothole_labels → MarkerArray → OK
+-------------------------------------------------------------------------------------------------
+
+Navigation inside RViz2:
+
+Rotate — Left-click + drag
+Zoom — Scroll wheel
+Pan — Middle-click + drag
+
+
