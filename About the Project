@@ -1,0 +1,9 @@
+This project simulates a LiDAR sensor scanning a road surface with potholes. Instead of using a real dataset, the road and potholes are procedurally generated using NumPy and published as a sensor_msgs/PointCloud2 message over ROS 2.
+Each pothole is rendered as a smooth bowl-shaped depression in the 3D point cloud, and labelled with a visualization_msgs/MarkerArray text marker showing its depth and diameter — visible live inside RViz2.
+Key features:
+
+Fake LiDAR point cloud of a 10m × 20m road published at 10 Hz
+4 configurable potholes with adjustable position, radius, and depth
+Height-based color gradient (Turbo/Jet) to highlight depressions visually
+Floating yellow text labels per pothole showing depth and diameter in mm
+Gaussian noise added to simulate real sensor imperfection
